@@ -3,12 +3,13 @@
 import logging
 
 from fastapi import FastAPI, Request
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pymysql import err as pymysql_err
 from swagger_ui_bundle import swagger_ui_path
 
-from app.routers import health, manage, upload
+from app.routers import health, manage, stats, upload
 
 logger = logging.getLogger(__name__)
 
@@ -74,3 +75,24 @@ app.include_router(health.router)
 # 业务路由（统一以 /api 为前缀）
 app.include_router(upload.router)
 app.include_router(manage.router)
+app.include_router(stats.router)
+
+
+def custom_openapi():
+    """生成 OpenAPI 3.0.2 文档。
+
+    本机离线使用的 Swagger UI 4.x 仅识别 swagger 2.0 / openapi 3.0.n，
+    而 FastAPI 默认输出 3.1.0，会导致页面报 "Unable to render this definition"。
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+    app.openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        openapi_version="3.0.2",
+        routes=app.routes,
+    )
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
