@@ -3,3 +3,4 @@ uvicorn
 pymysql
 python-dotenv
 python-multipart
+swagger-ui-bundle
