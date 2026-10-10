@@ -164,7 +164,7 @@
 - 行层：`product_id/product_name/category` 非空、`price` 为数值且 > 0、`quantity` 为正整数、`sale_date` 为合法日期，任一行不合法 → 422。
 - 大小：超过 10MB → 422。
 - 商品：不存在则新增；一致则复用；`name/category/price` 任一不一致 → 判定**冲突**并**拒绝**（不覆盖，保留库中现有信息）。
-- 销售：以 `(product_id, quantity, sale_date)` 判重，库中已存在或文件内重复的**跳过**。
+- 销售：以 `(product_id, quantity, sale_date)` 判重，库中已存在或文件内重复的**跳过**；所属商品被判为**冲突**的销售记录**一并跳过**。
 - 写入：整体以**事务**方式追加；不 DROP / TRUNCATE / ALTER，不删除现有数据。
 
 **成功响应 200**：
@@ -185,7 +185,7 @@
 | total_rows | int | 文件数据行总数 |
 | inserted_products | int | 新增商品数 |
 | inserted_sales | int | 新增销售记录数 |
-| skipped_duplicates | int | 重复跳过的销售数 |
+| skipped_duplicates | int | 跳过的销售数（重复，或所属商品信息冲突）|
 | rejected_conflicts | int | 因冲突被拒绝的商品数 |
 | conflict_details | array | 冲突明细（product_id 及原因），无冲突时为空数组 |
 
